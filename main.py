@@ -161,10 +161,10 @@ class Vision(AddOn):
             tables = extract(image_url)
             if output_format == "csv":
                 save_tables_to_csv(tables.tables, "tables.csv")
-                self.upload_file("tables.csv")
+                self.upload_file(open("tables.csv"))
             if output_format == "json":
                 save_tables_to_json(tables.tables, "tables.json")
-                self.upload_file("tables.json")
+                self.upload_file(open("tables.json"))
 
 
 if __name__ == "__main__":
