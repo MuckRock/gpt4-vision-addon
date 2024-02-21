@@ -79,7 +79,6 @@ class Vision(AddOn):
                 jsonfile.write('\n')
 
         def save_tables_to_csv(tables, csv_file, page_number):
-            print("Tables:", tables)
             with open(csv_file, "a", newline="", encoding="utf-8") as csvfile:  # Append mode
                 writer = csv.writer(csvfile)
                 writer.writerow([f"Page Number: {page_number}"])  # Write the page number
