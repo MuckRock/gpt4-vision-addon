@@ -36,7 +36,9 @@ class Vision(AddOn):
             Make sure to escape the markdown table properly, and make sure to include the caption and the dataframe.
             including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
             """
-        client = instructor.patch(OpenAI(api_key=os.environ["TOKEN"]), mode=instructor.function_calls.Mode.MD_JSON)
+        client = instructor.patch(
+            OpenAI(api_key=os.environ["TOKEN"]), mode=instructor.function_calls.Mode.MD_JSON
+        )
         prompt = self.data.get("prompt", "")
         final_prompt = prompt + "\n" + default_prompt_text
         output_format = self.data.get("output_format", "csv")
@@ -178,12 +180,15 @@ class Vision(AddOn):
         created_files = []  # Store the filenames of the created files
 
         for document in self.get_documents():
+            outer_bound = end_page + 1
+            if end_page > document.page_count:
+                outer_bound = document.page_count + 1
             if output_format == "csv":
                 csv_filename = f"tables-{document.id}.csv"
-                for page_number in range(start_page, end_page + 1):
+                for page_number in range(start_page, outer_bound):
                     image_url = document.get_large_image_url(page_number)
                     tables = extract(image_url)
-                    save_tables_to_csv(tables.tables, csv_filename, page_number)  # Pass csvfile instead of csv_filename
+                    save_tables_to_csv(tables.tables, csv_filename, page_number)
                 zipf.write(csv_filename)
                 created_files.append(csv_filename)
             elif output_format == "json":
