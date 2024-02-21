@@ -27,5 +27,7 @@ properties:
       - csv
       - json
 categories:
-  - file
+  - extraction
+  - ai
+  - premium
 version: 2
