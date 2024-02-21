@@ -37,7 +37,7 @@ class Vision(AddOn):
                 last_page = end_page
             else:
                 last_page = doc.page_count
-            pages_to_analyze = last_page - start_page
+            pages_to_analyze = last_page - start_page + 1
             total_num_pages += pages_to_analyze
         cost = total_num_pages
         return cost
