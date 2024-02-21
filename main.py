@@ -40,6 +40,7 @@ class Vision(AddOn):
             pages_to_analyze = last_page - start_page + 1
             total_num_pages += pages_to_analyze
         cost = total_num_pages
+        print(cost)
         return cost
 
 
