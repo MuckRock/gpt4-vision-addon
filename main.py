@@ -1,38 +1,171 @@
 """
-This is a hello world add-on for DocumentCloud.
-
-It demonstrates how to write a add-on which can be activated from the
-DocumentCloud add-on system and run using Github Actions.  It receives data
-from DocumentCloud via the request dispatch and writes data back to
-DocumentCloud using the standard API
+DocumentCloud Add-On that allows you to 
+pull tabular information from documents with GPT4-Vision
 """
 
+import csv
+import json
+from typing import Annotated, Any, List
+from io import StringIO
 from documentcloud.addon import AddOn
+from openai import OpenAI
+from pydantic import (
+    BaseModel,
+    BeforeValidator,
+    PlainSerializer,
+    InstanceOf,
+    WithJsonSchema,
+)
+import instructor
+import pandas as pd
 
 
-class HelloWorld(AddOn):
-    """An example Add-On for DocumentCloud."""
+class Vision(AddOn):
+    """Extract tabular data with GPT4-Vision"""
 
     def main(self):
         """The main add-on functionality goes here."""
-        # fetch your add-on specific data
-        name = self.data.get("name", "world")
+        default_prompt_text = """
+            First take a moment to reason about the best set of headers for the tables.
+            Write a good h1 for the image above. Then follow up with a short description of the what the data is about.
+            Then for each table you identified, write a h2 tag that is a descriptive title of the table.
+            Then follow up with a short description of the what the data is about.
+            Lastly, produce the markdown table for each table you identified.
+            Make sure to escape the markdown table properly, and make sure to include the caption and the dataframe.
+            including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
+            """
+        client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+        prompt = self.data.get("prompt", default_prompt_text)
+        output_format = self.data.get("output_format", "csv")
+        page = self.data.get("page", 1)
 
-        self.set_message("Hello World start!")
+        class TableEncoder(json.JSONEncoder):
+            """ Used to transform dataframe -> JSON 
+                output for save_tables_to_json
+            """
+            def default(self, o):
+                if isinstance(o, Table):
+                    cleaned_data = {}
+                    for key, value in o.dataframe.to_dict().items():
+                        cleaned_key = key.strip()
+                        cleaned_values = {
+                            sub_key.strip(): sub_value
+                            for sub_key, sub_value in value.items()
+                        }
+                        cleaned_data[cleaned_key] = cleaned_values
+                    return {
+                        "caption": o.caption,
+                        "dataframe": cleaned_data,
+                    }
+                return super().default(o)
 
-        # add a hello note to the first page of each selected document
+        def save_tables_to_json(tables, filename):
+            with open(filename, "w", encoding="utf-8") as jsonfile:
+                json.dump(tables, jsonfile, indent=4, cls=TableEncoder)
+
+        def save_tables_to_csv(tables, filename):
+            with open(filename, "w", newline="", encoding="utf-8") as csvfile:
+                writer = csv.writer(csvfile)
+                for table in tables:
+                    writer.writerow([table.caption])
+                    writer.writerow([])
+                    writer.writerows(table.dataframe.values.tolist())
+                    writer.writerow([])  # Add empty rows between tables
+
+        def md_to_df(data: Any) -> Any:
+            if isinstance(data, str):
+                return (
+                    pd.read_csv(
+                        StringIO(data),  # Get rid of whitespaces
+                        sep="|",
+                        index_col=1,
+                    )
+                    .dropna(axis=1, how="all")
+                    .iloc[1:]
+                    .map(lambda x: x.strip())
+                )
+            return data
+
+        MarkdownDataFrame = Annotated[
+            InstanceOf[pd.DataFrame],
+            BeforeValidator(md_to_df),
+            PlainSerializer(lambda x: x.to_markdown()),
+            WithJsonSchema(
+                {
+                    "type": "string",
+                    "description": """
+                        The markdown representation of the table,
+                        each one should be tidy, do not try to join tables
+                        that should be seperate""",
+                }
+            ),
+        ]
+
+        class Table(BaseModel):
+            """Where we define a table"""
+
+            caption: str
+            dataframe: MarkdownDataFrame
+
+        class MultipleTables(BaseModel):
+            """Where we define multiple tables"""
+
+            tables: List[Table]
+
+        example = MultipleTables(
+            tables=[
+                Table(
+                    caption="This is a caption",
+                    dataframe=pd.DataFrame(
+                        {
+                            "Chart A": [10, 40],
+                            "Chart B": [20, 50],
+                            "Chart C": [30, 60],
+                        }
+                    ),
+                )
+            ]
+        )
+
+        def extract(url: str) -> MultipleTables:
+            tables = client.chat.completions.create(
+                model="gpt-4-vision-preview",
+                max_tokens=4000,
+                response_model=MultipleTables,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Describe this data accurately as a table"
+                                f" in markdown format. {example.model_dump_json(indent=2)}",
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {"url": url},
+                            },
+                            {
+                                "type": "text",
+                                "text": f"{prompt}",
+                            },
+                        ],
+                    }
+                ],
+            )
+
+            return tables
+
         for document in self.get_documents():
-            # get_documents will iterate through all documents efficiently,
-            # either selected or by query, dependeing on which is passed in
-            document.annotations.create(f"Hello {name}!", 0)
-
-        with open("hello.txt", "w+") as file_:
-            file_.write("Hello world!")
-            self.upload_file(file_)
-
-        self.set_message("Hello World end!")
-        self.send_mail("Hello World!", "We finished!")
+            image_url = document.get_large_image_url(page)
+            tables = extract(image_url)
+            if output_format == "csv":
+                save_tables_to_csv(tables.tables, "tables.csv")
+                self.upload_file("tables.csv")
+            if output_format == "json":
+                save_tables_to_json(tables.tables, "tables.json")
+                self.upload_file("tables.json")
 
 
 if __name__ == "__main__":
-    HelloWorld().main()
+    Vision().main()

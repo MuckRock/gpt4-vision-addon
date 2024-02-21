@@ -1,2 +1,5 @@
-python-documentcloud==3.7.1
-requests
+instructor==0.6.1
+openai==1.12.0
+pandas==2.2.0
+pydantic==2.6.1
+python_documentcloud==4.0.1
