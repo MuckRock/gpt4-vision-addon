@@ -22,6 +22,12 @@ from pydantic import (
 import instructor
 import pandas as pd
 
+from tenacity import (
+    retry,
+    stop_after_attempt,
+    wait_random_exponential,
+)  # for exponential backoff
+
 
 class Vision(AddOn):
     """Extract tabular data with GPT4-Vision"""
@@ -191,6 +197,7 @@ class Vision(AddOn):
             ]
         )
 
+        @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
         def extract(url: str) -> MultipleTables:
             tables = client.chat.completions.create(
                 model="gpt-4-vision-preview",
