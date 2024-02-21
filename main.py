@@ -85,9 +85,12 @@ class Vision(AddOn):
                 for table in tables:
                     writer.writerow([table.caption])
                     writer.writerows(table.dataframe.values.tolist())
-                    writer.writerow([])  # Add empty rows between tables
-                    writer.writerow([])
-                    writer.writerow([])
+                    for row in table.dataframe.values.tolist():
+                        row_with_quotes = ['"{}"'.format(cell) if ',' in str(cell) else cell for cell in row]
+                        writer.writerow(row_with_quotes)
+                    writer.writerow([])  # Add empty row between tables
+                    writer.writerow([])  # Add empty row between tables
+                    writer.writerow([])  # Add empty row between tables
 
         def md_to_df(data: Any) -> Any:
             if isinstance(data, str):
