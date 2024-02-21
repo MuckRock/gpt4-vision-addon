@@ -88,17 +88,6 @@ class Vision(AddOn):
                 writer.writerow([])
                 writer.writerow([])
 
-        """          
-        def save_tables_to_csv(tables, filename):
-            with open(filename, "w", newline="", encoding="utf-8") as csvfile:
-                writer = csv.writer(csvfile)
-                for table in tables:
-                    writer.writerow([table.caption])
-                    writer.writerow([])
-                    writer.writerows(table.dataframe.values.tolist())
-                    writer.writerow([])  # Add empty rows between tables
-        """
-
         def md_to_df(data: Any) -> Any:
             if isinstance(data, str):
                 return (
@@ -133,7 +122,6 @@ class Vision(AddOn):
 
             caption: str
             dataframe: MarkdownDataFrame
-            page_number: int
 
         class MultipleTables(BaseModel):
             """Where we define multiple tables"""
@@ -155,7 +143,7 @@ class Vision(AddOn):
             ]
         )
 
-        def extract(url: str, page_number) -> MultipleTables:
+        def extract(url: str) -> MultipleTables:
             tables = client.chat.completions.create(
                 model="gpt-4-vision-preview",
                 max_tokens=4000,
@@ -182,9 +170,6 @@ class Vision(AddOn):
                 ],
             )
 
-            for table in tables.tables:
-                table.page_number = page_number  # Assign the page number to each table
-
             return tables
 
         zip_filename = "all_tables.zip"
@@ -198,7 +183,7 @@ class Vision(AddOn):
                 json_filename = f"tables-{document.id}.json"
             for page_number in range(start_page, end_page + 1):
                 image_url = document.get_large_image_url(page_number)
-                tables = extract(image_url, page_number)
+                tables = extract(image_url)
                 if output_format == "csv":
                     save_tables_to_csv(tables.tables, csv_filename, page_number)
                 elif output_format == "json":
