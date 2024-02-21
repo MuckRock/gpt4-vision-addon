@@ -28,7 +28,7 @@ class Vision(AddOn):
     def main(self):
         """The main add-on functionality goes here."""
         default_prompt_text = """
-            First take a moment to reason about the best set of headers for the tables.
+            Take a moment to reason about the best set of headers for the tables.
             Write a good h1 for the image above. Then follow up with a short description of the what the data is about.
             Then for each table you identified, write a h2 tag that is a descriptive title of the table.
             Then follow up with a short description of the what the data is about.
