@@ -2,7 +2,7 @@
 DocumentCloud Add-On that allows you to 
 pull tabular information from documents with GPT4-Vision
 """
-
+import os
 import csv
 import json
 from typing import Annotated, Any, List
@@ -34,7 +34,7 @@ class Vision(AddOn):
             Make sure to escape the markdown table properly, and make sure to include the caption and the dataframe.
             including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
             """
-        client = instructor.patch(OpenAI(), mode=instructor.function_calls.Mode.MD_JSON)
+        client = instructor.patch(OpenAI(api_key=os.environ["TOKEN"]), mode=instructor.function_calls.Mode.MD_JSON)
         prompt = self.data.get("prompt", default_prompt_text)
         output_format = self.data.get("output_format", "csv")
         page = self.data.get("page", 1)
