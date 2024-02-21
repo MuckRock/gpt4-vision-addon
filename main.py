@@ -96,7 +96,7 @@ class Vision(AddOn):
                     pd.read_csv(
                         StringIO(data),  # Get rid of whitespaces
                         sep="|",
-                        index_col=1,
+                        index_col=None,
                     )
                     .dropna(axis=1, how="all")
                     .iloc[1:]
