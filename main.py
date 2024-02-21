@@ -179,24 +179,22 @@ class Vision(AddOn):
         for document in self.get_documents():
             if output_format == "csv":
                 csv_filename = f"tables-{document.id}.csv"
-            if output_format == "json":
-                json_filename = f"tables-{document.id}.json"
-            for page_number in range(start_page, end_page + 1):
-                image_url = document.get_large_image_url(page_number)
-                tables = extract(image_url)
-                if output_format == "csv":
-                    save_tables_to_csv(tables.tables, csv_filename, page_number)
-                elif output_format == "json":
-                    save_tables_to_json(tables.tables, json_filename, page_number)
-            if output_format == "csv":
+                with open(csv_filename, "a", newline="", encoding="utf-8") as csvfile:  # Open file here
+                    csv.writer(csvfile)
+                for page_number in range(start_page, end_page + 1):
+                    image_url = document.get_large_image_url(page_number)
+                    tables = extract(image_url)
+                    save_tables_to_csv(tables.tables, csvfile, page_number)  # Pass csvfile instead of csv_filename
                 zipf.write(csv_filename)
                 created_files.append(csv_filename)
-                os.remove(csv_filename)  # Remove the CSV file after adding it to the zip
             elif output_format == "json":
+                json_filename = f"tables-{document.id}.json"
+                for page_number in range(start_page, end_page + 1):
+                    image_url = document.get_large_image_url(page_number)
+                    tables = extract(image_url)
+                    save_tables_to_json(tables.tables, json_filename, page_number)
                 zipf.write(json_filename)
                 created_files.append(json_filename)
-                os.remove(json_filename)  # Remove
-
 
         zipf.close()  # Close the zip file
 
