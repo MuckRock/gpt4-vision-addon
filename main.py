@@ -81,12 +81,12 @@ class Vision(AddOn):
             with open(csv_file, "a", newline="", encoding="utf-8") as csvfile:  # Append mode
                 writer = csv.writer(csvfile)
                 writer.writerow([f"Page Number: {page_number}"])  # Write the page number
-            for table in tables:
-                writer.writerow([table.caption])
-                writer.writerows(table.dataframe.values.tolist())
-                writer.writerow([])  # Add empty rows between tables
-                writer.writerow([])
-                writer.writerow([])
+                for table in tables:
+                    writer.writerow([table.caption])
+                    writer.writerows(table.dataframe.values.tolist())
+                    writer.writerow([])  # Add empty rows between tables
+                    writer.writerow([])
+                    writer.writerow([])
 
         def md_to_df(data: Any) -> Any:
             if isinstance(data, str):
