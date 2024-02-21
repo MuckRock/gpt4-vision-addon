@@ -83,7 +83,7 @@ class Vision(AddOn):
                     )
                     .dropna(axis=1, how="all")
                     .iloc[1:]
-                    .map(lambda x: x.strip())
+                    .applymap(lambda x: x.strip() if isinstance(x, str) else x)
                 )
             return data
 
