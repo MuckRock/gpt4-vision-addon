@@ -37,7 +37,8 @@ class Vision(AddOn):
             including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
             """
         client = instructor.patch(OpenAI(api_key=os.environ["TOKEN"]), mode=instructor.function_calls.Mode.MD_JSON)
-        prompt = self.data.get("prompt", default_prompt_text)
+        prompt = self.data.get("prompt", "")
+        final_prompt = prompt + "\n" + default_prompt_text
         output_format = self.data.get("output_format", "csv")
         start_page = self.data.get("start_page", 1)
         end_page = self.data.get("end_page", 1)
@@ -163,7 +164,7 @@ class Vision(AddOn):
                             },
                             {
                                 "type": "text",
-                                "text": f"{prompt}",
+                                "text": f"{final_prompt}",
                             },
                         ],
                     }
