@@ -1,6 +1,6 @@
-title: GPT-4 Vision Add-On
-description: Analyze tables and forms in your documents using GPT-4 Vision.  
-instructions: 
+title:'GPT-4 Vision Add-On'
+description: 'Analyze tables and forms in your documents using GPT-4 Vision.'
+instructions: ''
 type: object
 documents:
   - selected
@@ -10,7 +10,7 @@ properties:
     type: integer
     description: Page number you'd like to analyze.
     default: 1
-  prompt: 
+  prompt:
     title: Prompt
     type: string
     description: GPT-4 prompt to provide for analysis. This field is optional, there is a default prompt. 
@@ -21,6 +21,6 @@ properties:
     enum:
       - csv
       - json
-categories: 
+categories:
   - file
 version: 2
