@@ -133,6 +133,7 @@ class Vision(AddOn):
 
             caption: str
             dataframe: MarkdownDataFrame
+            page_number: int
 
         class MultipleTables(BaseModel):
             """Where we define multiple tables"""
