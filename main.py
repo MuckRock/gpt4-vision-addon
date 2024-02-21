@@ -3,6 +3,7 @@ DocumentCloud Add-On that allows you to
 pull tabular information from documents with GPT4-Vision
 """
 import os
+import sys
 import csv
 import json
 import zipfile
@@ -38,7 +39,15 @@ class Vision(AddOn):
         client = instructor.patch(OpenAI(api_key=os.environ["TOKEN"]), mode=instructor.function_calls.Mode.MD_JSON)
         prompt = self.data.get("prompt", default_prompt_text)
         output_format = self.data.get("output_format", "csv")
-        page = self.data.get("page", 1)
+        start_page = self.data.get("start_page", 1)
+        end_page = self.data.get("end_page", 1)
+
+        if end_page < start_page:
+            self.set_message("The end page you provided is smaller than the start page, try again")
+            sys.exit(0)
+        if start_page < 1:
+            self.set_message("Your start page is less than 1, please try again")
+            sys.exit(0)
 
         class TableEncoder(json.JSONEncoder):
             """ Used to transform dataframe -> JSON 
@@ -60,10 +69,26 @@ class Vision(AddOn):
                     }
                 return super().default(o)
 
-        def save_tables_to_json(tables, filename):
-            with open(filename, "w", encoding="utf-8") as jsonfile:
+        def save_tables_to_json(tables, filename, page_number):
+            with open(filename, "a", encoding="utf-8") as jsonfile:  # Append mode
+                jsonfile.write(f"Page number: {page_number}")
                 json.dump(tables, jsonfile, indent=4, cls=TableEncoder)
+                jsonfile.write('\n')
+                jsonfile.write('\n')
+                jsonfile.write('\n')
 
+        def save_tables_to_csv(tables, filename, page_number):
+            with open(filename, "a", newline="", encoding="utf-8") as csvfile:  # Append mode
+                writer = csv.writer(csvfile)
+                writer.writerow([f"Page Number: {page_number}"])  # Write the page number
+            for table in tables:
+                writer.writerow([table.caption])
+                writer.writerows(table.dataframe.values.tolist())
+                writer.writerow([])  # Add empty rows between tables
+                writer.writerow([])
+                writer.writerow([])
+
+        """          
         def save_tables_to_csv(tables, filename):
             with open(filename, "w", newline="", encoding="utf-8") as csvfile:
                 writer = csv.writer(csvfile)
@@ -72,6 +97,7 @@ class Vision(AddOn):
                     writer.writerow([])
                     writer.writerows(table.dataframe.values.tolist())
                     writer.writerow([])  # Add empty rows between tables
+        """
 
         def md_to_df(data: Any) -> Any:
             if isinstance(data, str):
@@ -128,7 +154,7 @@ class Vision(AddOn):
             ]
         )
 
-        def extract(url: str) -> MultipleTables:
+        def extract(url: str, page_number) -> MultipleTables:
             tables = client.chat.completions.create(
                 model="gpt-4-vision-preview",
                 max_tokens=4000,
@@ -155,37 +181,36 @@ class Vision(AddOn):
                 ],
             )
 
-            return tables
+            for table in tables.tables:
+                table.page_number = page_number  # Assign the page number to each table
 
-        """for document in self.get_documents():
-            image_url = document.get_large_image_url(page)
-            tables = extract(image_url)
-            if output_format == "csv":
-                save_tables_to_csv(tables.tables, f"tables-{document.id}.csv")
-                self.upload_file(open("tables.csv"))
-            if output_format == "json":
-                save_tables_to_json(tables.tables, f"tables-{document.id}.json")
-                self.upload_file(open("tables.json"))"""
+            return tables
 
         zip_filename = "all_tables.zip"
         zipf = zipfile.ZipFile(zip_filename, "w")  # Create a zip file
         created_files = []  # Store the filenames of the created files
 
         for document in self.get_documents():
-            image_url = document.get_large_image_url(page)
-            tables = extract(image_url)
             if output_format == "csv":
                 csv_filename = f"tables-{document.id}.csv"
-                save_tables_to_csv(tables.tables, csv_filename)
+            if output_format == "json":
+                json_filename = f"tables-{document.id}.json"
+            for page_number in range(start_page, end_page + 1):
+                image_url = document.get_large_image_url(page_number)
+                tables = extract(image_url, page_number)
+                if output_format == "csv":
+                    save_tables_to_csv(tables.tables, csv_filename, page_number)
+                elif output_format == "json":
+                    save_tables_to_json(tables.tables, json_filename, page_number)
+            if output_format == "csv":
                 zipf.write(csv_filename)
                 created_files.append(csv_filename)
                 os.remove(csv_filename)  # Remove the CSV file after adding it to the zip
-            if output_format == "json":
-                json_filename = f"tables-{document.id}.json"
-                save_tables_to_json(tables.tables, json_filename)
+            elif output_format == "json":
                 zipf.write(json_filename)
                 created_files.append(json_filename)
-                os.remove(json_filename)  # Remove the JSON file after adding it to the zip
+                os.remove(json_filename)  # Remove
+
 
         zipf.close()  # Close the zip file
 

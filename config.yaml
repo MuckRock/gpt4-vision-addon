@@ -5,10 +5,15 @@ type: object
 documents:
   - selected
 properties:
-  page:
-    title: Page number
+  start_page:
+    title: Starting page number
     type: integer
-    description: 'Page number you would like to analyze.'
+    description: 'Page number where the table(s) begin'
+    default: 1
+  end_page:
+    title: Ending page number
+    type: integer
+    description: 'Page number where table(s) end'
     default: 1
   prompt:
     title: Prompt
