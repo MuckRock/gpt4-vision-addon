@@ -5,6 +5,7 @@ pull tabular information from documents with GPT4-Vision
 import os
 import csv
 import json
+import zipfile
 from typing import Annotated, Any, List
 from io import StringIO
 from documentcloud.addon import AddOn
@@ -156,15 +157,41 @@ class Vision(AddOn):
 
             return tables
 
+        """for document in self.get_documents():
+            image_url = document.get_large_image_url(page)
+            tables = extract(image_url)
+            if output_format == "csv":
+                save_tables_to_csv(tables.tables, f"tables-{document.id}.csv")
+                self.upload_file(open("tables.csv"))
+            if output_format == "json":
+                save_tables_to_json(tables.tables, f"tables-{document.id}.json")
+                self.upload_file(open("tables.json"))"""
+
+        zip_filename = "all_tables.zip"
+        zipf = zipfile.ZipFile(zip_filename, "w")  # Create a zip file
+        created_files = []  # Store the filenames of the created files
+
         for document in self.get_documents():
             image_url = document.get_large_image_url(page)
             tables = extract(image_url)
             if output_format == "csv":
-                save_tables_to_csv(tables.tables, "tables.csv")
-                self.upload_file(open("tables.csv"))
+                csv_filename = f"tables-{document.id}.csv"
+                save_tables_to_csv(tables.tables, csv_filename)
+                zipf.write(csv_filename)
+                created_files.append(csv_filename)
+                os.remove(csv_filename)  # Remove the CSV file after adding it to the zip
             if output_format == "json":
-                save_tables_to_json(tables.tables, "tables.json")
-                self.upload_file(open("tables.json"))
+                json_filename = f"tables-{document.id}.json"
+                save_tables_to_json(tables.tables, json_filename)
+                zipf.write(json_filename)
+                created_files.append(json_filename)
+                os.remove(json_filename)  # Remove the JSON file after adding it to the zip
+
+        zipf.close()  # Close the zip file
+
+        # Upload the zip file
+        with open(zip_filename, "rb") as f:
+            self.upload_file(f)
 
 
 if __name__ == "__main__":
