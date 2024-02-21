@@ -1,4 +1,4 @@
-title:'GPT-4 Vision Add-On'
+title: 'GPT-4 Vision Add-On'
 description: 'Analyze tables and forms in your documents using GPT-4 Vision.'
 instructions: ''
 type: object
@@ -8,14 +8,14 @@ properties:
   page:
     title: Page number
     type: integer
-    description: Page number you'd like to analyze.
+    description: 'Page number you would like to analyze.'
     default: 1
   prompt:
     title: Prompt
     type: string
-    description: GPT-4 prompt to provide for analysis. This field is optional, there is a default prompt. 
+    description: 'GPT-4 prompt to provide for analysis. This field is optional, there is a default prompt.'
   output_format:
-    title: Output format
+    title: 'Output format'
     type: string
     default: csv
     enum:
