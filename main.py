@@ -69,16 +69,16 @@ class Vision(AddOn):
                     }
                 return super().default(o)
 
-        def save_tables_to_json(tables, filename, page_number):
-            with open(filename, "a", encoding="utf-8") as jsonfile:  # Append mode
+        def save_tables_to_json(tables, json_file, page_number):
+            with open(json_file, "a", encoding="utf-8") as jsonfile:  # Append mode
                 jsonfile.write(f"Page number: {page_number}")
                 json.dump(tables, jsonfile, indent=4, cls=TableEncoder)
                 jsonfile.write('\n')
                 jsonfile.write('\n')
                 jsonfile.write('\n')
 
-        def save_tables_to_csv(tables, filename, page_number):
-            with open(filename, "a", newline="", encoding="utf-8") as csvfile:  # Append mode
+        def save_tables_to_csv(tables, csv_file, page_number):
+            with open(csv_file, "a", newline="", encoding="utf-8") as csvfile:  # Append mode
                 writer = csv.writer(csvfile)
                 writer.writerow([f"Page Number: {page_number}"])  # Write the page number
             for table in tables:
@@ -179,12 +179,10 @@ class Vision(AddOn):
         for document in self.get_documents():
             if output_format == "csv":
                 csv_filename = f"tables-{document.id}.csv"
-                with open(csv_filename, "a", newline="", encoding="utf-8") as csvfile:  # Open file here
-                    csv.writer(csvfile)
                 for page_number in range(start_page, end_page + 1):
                     image_url = document.get_large_image_url(page_number)
                     tables = extract(image_url)
-                    save_tables_to_csv(tables.tables, csvfile, page_number)  # Pass csvfile instead of csv_filename
+                    save_tables_to_csv(tables.tables, csv_filename, page_number)  # Pass csvfile instead of csv_filename
                 zipf.write(csv_filename)
                 created_files.append(csv_filename)
             elif output_format == "json":
