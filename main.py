@@ -45,7 +45,7 @@ class Vision(AddOn):
                 last_page = doc.page_count
             pages_to_analyze = last_page - start_page + 1
             total_num_pages += pages_to_analyze
-        cost = total_num_pages
+        cost = total_num_pages * 7
         print(cost)
         return cost
 
