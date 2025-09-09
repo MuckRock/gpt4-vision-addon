@@ -95,8 +95,10 @@ class Vision(AddOn):
             Make sure to escape the markdown table properly, and make sure to include the caption and the dataframe.
             including escaping all the newlines and quotes. Only return a markdown table in dataframe, nothing else.
             """
-        client = instructor.patch(
-            OpenAI(api_key=os.environ["TOKEN"]), mode=instructor.function_calls.Mode.MD_JSON
+        base_client = OpenAI(api_key=os.environ["TOKEN"])
+        client = instructor.from_openai(
+            base_client,
+            mode=instructor.Mode.MD_JSON,
         )
         prompt = self.data.get("prompt", "")
         final_prompt = prompt + "\n" + default_prompt_text
