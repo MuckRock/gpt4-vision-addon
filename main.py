@@ -1,6 +1,6 @@
 """
 DocumentCloud Add-On that allows you to 
-pull tabular information from documents with GPT4-Vision
+pull tabular information from documents with GPT4o
 """
 import os
 import sys

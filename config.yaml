@@ -1,5 +1,5 @@
-title: 'GPT-4 Vision Table Extractor'
-description: 'Analyze tables and forms in your documents using GPT-4 Vision.'
+title: 'GPT 4o Table Extractor'
+description: 'Analyze tables and forms in your documents using GPT 4o.'
 instructions: ''
 type: object
 documents:
@@ -18,7 +18,7 @@ properties:
   prompt:
     title: Prompt
     type: string
-    description: 'GPT-4 prompt to provide for analysis. This field is optional, there is a default prompt.'
+    description: 'GPT 4o prompt to provide for analysis. This field is optional, there is a default prompt.'
   output_format:
     title: 'Output format'
     type: string
@@ -31,7 +31,7 @@ categories:
   - ai
   - premium
 cost:
-  price: 7
+  price: 2
   amount: 1
   unit: page
 version: 2
