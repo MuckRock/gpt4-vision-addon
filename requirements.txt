@@ -1,6 +1,6 @@
 openai>=1.1.0,<2.0.0
 instructor==1.11.3
 pandas==2.2.0
-pydantic==2.6.1
+pydantic>=2.8,<3.0.0
 python_documentcloud==4.1.3
 tabulate
