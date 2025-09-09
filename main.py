@@ -210,7 +210,7 @@ class Vision(AddOn):
         @retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
         def extract(url: str) -> MultipleTables:
             tables = client.chat.completions.create(
-                model="gpt-4-vision-preview",
+                model="gpt-4o",
                 max_tokens=4000,
                 response_model=MultipleTables,
                 messages=[
