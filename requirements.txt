@@ -1,5 +1,5 @@
 instructor==1.11.3
-openai==1.12.0
+openai==<2.0.0
 pandas==2.2.0
 pydantic==2.6.1
 python_documentcloud==4.1.3
