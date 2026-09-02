@@ -1,5 +1,10 @@
 title: 'GPT 4o Table Extractor'
-description: 'Analyze tables and forms in your documents using GPT 4o.'
+description: |
+  Analyze tables and forms in your documents using GPT 4o.
+  Disclosure: This Add-On uses AI. It only runs when you tell it to. It can run on any public document 
+  or any private document that you have access to. It cannot access documents you don't have access to. 
+  You may read more about OpenAI's [training](https://help.openai.com/en/articles/7842364-how-chatgpt-and-our-foundation-models-are-developed) 
+  and [privacy policy]( https://openai.com/policies/row-privacy-policy/) to learn more. 
 instructions: ''
 type: object
 documents:
