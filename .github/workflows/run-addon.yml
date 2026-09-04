@@ -7,5 +7,6 @@ jobs:
     uses: MuckRock/documentcloud-addon-workflows/.github/workflows/run-addon.yml@v2
     with:
       timeout: 60
+      python-version: 3.12
     secrets:
       token: ${{ secrets.API_KEY }}
